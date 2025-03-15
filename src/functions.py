@@ -253,7 +253,7 @@ def quote_to_html_node(block):
 def copy_static_to_public():
     
     source = 'static/'
-    destination = "public/"
+    destination = "docs/"
     if os.path.exists(destination):
         shu.rmtree(destination)
     os.mkdir(destination)
@@ -285,7 +285,7 @@ def filter_title(markdown):
     filtered_lines = [line for line in lines if not line.startswith("# ")]
     return "\n".join(filtered_lines)
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from{from_path} to {dest_path} using {template_path}")
     with open(from_path, 'r') as file:
         markdown_content = file.read()
@@ -299,7 +299,11 @@ def generate_page(from_path, template_path, dest_path):
         template_content = file.read()
     
  
-    final_html = template_content.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    final_html = (template_content
+                  .replace("{{ Title }}", title)
+                  .replace("{{ Content }}", content)
+                  .replace('href="/', f'href="{basepath}')
+                  .replace('src="/', f'src="{basepath}'))
 
     # Get the directory part of the destination path
     directory = os.path.dirname(dest_path)
@@ -313,19 +317,19 @@ def generate_page(from_path, template_path, dest_path):
         file.write(final_html)
 
 # New function to process all markdown files
-def generate_pages():
+def generate_pages(basepath):
     for root, dirs, files in os.walk("content"):
         for file in files:
             if file.endswith(".md"):
                 # Construct paths
                 from_path = os.path.join(root, file)
-                # Replace 'content' with 'public' and '.md' with '.html'
+                # Replace 'content' with 'docs' and '.md' with '.html'
                 rel_path = os.path.relpath(from_path, "content")
-                dest_path = os.path.join("public", os.path.splitext(rel_path)[0] + ".html")
+                dest_path = os.path.join("docs", os.path.splitext(rel_path)[0] + ".html")
                 
                 # Generate the page
-                generate_page(from_path, "template.html", dest_path)
+                generate_page(from_path, "template.html", dest_path, basepath)
 
-def generate_pages_recursive():
+def generate_pages_recursive(basepath):
     copy_static_to_public()
-    generate_pages()
+    generate_pages(basepath)

@@ -1,15 +1,21 @@
-import os
+import sys
 from leafnode import LeafNode
 from textnode import *
 from functions import *
 
 
-def main():
-    node = TextNode("This is a text node", TextType.BOLD, "https://www.boot.dev")
-    print(node)
-
-   
+def main(arg):
+    if arg:
+        print(arg)
+        basepath = arg
+    else:
+        basepath = "/"
     
-    generate_pages_recursive()
+    
+    
+    generate_pages_recursive(basepath)
 
-main()
+if len(sys.argv) > 1:
+    main(sys.argv[1])
+else: 
+    main(None)
